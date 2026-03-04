@@ -1,36 +1,29 @@
-import {useEffect, useState} from "react";
-import Navbar from "../components/Navbar";
-import TurnoCard from "../components/TurnoCard";
+"use client";
+import { useEffect, useState } from "react";
+import { apiFetch } from "../lib/api";
 
-export default function Turnos(){
-    const [turnos, setTurnos] = useState([]);
-    const [error, setError] = useState(null);
-    
-    useEffect(() => {
-        async function fetchTurnos(){
-            try{
-                const token = localStorage.getItem("token");
-                const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/turnos`, {
-                    headers: {Authorization: `Bearer ${token}`}
-                });
-                if(!res.ok) throw new Error("NO AUTORIZADO");
-                const data = await res.json();
-                setTurnos(data);
-            } catch(err) {
-                setError(err.message);
-            }
-        }
-        fetchTurnos();
-    }, []);
-    
-    return(
-        <div>
-            <Navbar />
-            <h1>Lista de Turnos</h1>
-            {error && <p style={{color:"red"}}>{error}</p>}
-            {turnos.map((t) => (
-                <TurnoCard key={t.id} turno={t} />
-            ))}
-        </div>
-    );
+export default function TurnosPage() {
+  const [turnos, setTurnos] = useState([]);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    apiFetch("/turnos")
+      .then((data) => setTurnos(data))
+      .catch((err) => setError(err.message));
+  }, []);
+
+  if (error) return <p>{error}</p>;
+
+  return (
+    <div>
+      <h1>Lista de Turnos</h1>
+      <ul>
+        {turnos.map((t) => (
+          <li key={t.id}>
+            {t.nombreCliente} - {t.servicio} ({t.status})
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
 }
